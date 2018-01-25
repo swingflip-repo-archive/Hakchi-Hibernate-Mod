@@ -1,6 +1,6 @@
 # Hakchi-Hibernate-Mod
 #### Remote Hibernate and Power mod for the SNES mini
-#### Made by Swingflip, made possible by CompCom
+#### Made by Swingflip, made possible by CompCom, art by Bslenul
  
  
 To open the power menu, Hold L + R + UP on the controller at any point during play. This can be within canoe, retroarch or clover.
