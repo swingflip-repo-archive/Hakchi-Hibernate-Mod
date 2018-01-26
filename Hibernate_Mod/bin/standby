@@ -1,0 +1,68 @@
+#!/bin/sh
+
+source /etc/preinit
+script_init
+
+Hibernate()
+{
+  xz -dc "$rootfs/etc/hibernate_mod/hibernating.png.xz" > /dev/fb0
+  echo "Initiating shutdown followed by hibernate mode..."
+  echo 0 > /sys/devices/virtual/disp/disp/attr/lcd
+  echo "Initialising hibernation mode..."
+  #echo Core Temperature at the time of hibernation: $(hakchi hwmon)c;
+  echo "Hibernation mode active! Awaiting input..."
+}
+
+Standby()
+{
+  xz -dc "$rootfs/etc/hibernate_mod/hibernating.png.xz" > /dev/fb0
+  echo "Initiating shutdown followed by standby mode..."
+  udevadm control --stop-exec-queue
+  killall udevd
+  modprobe -r clvcon
+  uistop
+  echo 0 > /sys/devices/virtual/disp/disp/attr/lcd
+  [ -b '/dev/sda1' ] && umount /dev/sda1
+  echo "Initialising standby mode..."
+  #echo "Core Temperature at the time of standby: $(hakchi hwmon)c"
+  echo "Standby mode active! Awaiting input..."
+}
+
+#UI Commands from latest hakchi version
+Uilist(){
+  lsof -n | grep -F "/dev/fb0" | awk '{print $1}' | sort -u
+}
+
+Uikill(){
+  [ -z "$1" ] && return 1
+  Uilist | xargs -r kill -s "$1"
+}
+
+DisplayMenu()
+{
+  if type -t uipause 1> /dev/null; then
+    uipause
+  else
+    Uikill STOP
+  fi
+  xz -dc "$rootfs/etc/hibernate_mod/1.png.xz" > /dev/fb0
+}
+
+Resume()
+{
+  if type -t uiresume 1> /dev/null; then
+    uiresume
+  else
+    Uikill CONT
+  fi
+}
+
+HibernateReboot()
+{
+  echo "Shutting down console out from hibernation mode..."
+  Resume
+  sync
+  reboot
+}
+
+${1+"$@"}

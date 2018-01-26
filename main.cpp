@@ -21,8 +21,7 @@ int GetState()
         c.Update();
         if(c.PeekButtonStatus(L) && c.PeekButtonStatus(R) && c.GetButtonStatus(UP))
         {
-            system("hakchi uipause");
-            system(("xz -dc " + path + "etc/hibernate_mod/1.png.xz > /dev/fb0").c_str());
+            system("standby DisplayMenu");
             auto fpsTime = std::chrono::milliseconds(33); // Check for input faster
             //system("echo DEBUG: Displaying hibernate menu...");
             for(;;)
@@ -43,6 +42,10 @@ int GetState()
                     //system("echo DEBUG: Cancelled hibernate...");
                     return 3;
                 }
+                else if(pw.buttonPress())
+                {
+                    return 3;
+                }
                 std::this_thread::sleep_until(nextUpdateTime);
                 nextUpdateTime+=fpsTime;
             }
@@ -57,16 +60,8 @@ int GetState()
 
 void Hibernate()
 {
-    system(("xz -dc " + path + "etc/hibernate_mod/hibernating.png.xz > /dev/fb0").c_str());
+    system("standby Hibernate");
 
-    system("echo Initiating shutdown followed by hibernate mode...");
-
-    system("echo 0 > /sys/devices/virtual/disp/disp/attr/lcd"); //Kill the Screen
-
-    system("echo Initialising hibernation mode...");
-
-    //system("echo Core Temperature at the time of hibernation: $(hakchi hwmon)c");
-    system("echo Hibernation mode active! Awaiting input...");
     for(;;)
     {
         c.Update();
@@ -79,13 +74,12 @@ void Hibernate()
         else if(c.PeekButtonStatus(L) && c.PeekButtonStatus(R) && c.GetButtonStatus(DOWN))
         {
             //system("echo Core Temperature at the time of shutdown out of hibernation: $(hakchi hwmon)c");
-            system("echo Shutting down console out from hibernation mode...");
-            system("hakchi uiresume && sync && reboot &");
+            system("standby HibernateReboot &");
             exit(0);
         }
         else if(pw.buttonPress())
         {
-            system("hakchi uiresume &");
+            system("standby Resume &");
             exit(0);
         }
         std::this_thread::sleep_until(nextUpdateTime);
@@ -95,21 +89,8 @@ void Hibernate()
 
 void Standby()
 {
-    system(("xz -dc " + path + "etc/hibernate_mod/hibernating.png.xz > /dev/fb0").c_str());
+    system("standby Standby");
 
-    system("echo Initiating shutdown followed by standby mode...");
-
-    system("udevadm control --stop-exec-queue"); //Stop execution of events
-    system("killall udevd"); //Stop execution of events
-    system("modprobe -r clvcon"); // Kill Clvcon -- Don't think this works but doesn't harm shutdown so leave it in just in case.
-    system("hakchi uistop"); //Kill everything including retroarch
-    system("echo 0 > /sys/devices/virtual/disp/disp/attr/lcd"); //Kill the Screen
-    system("[ -b '/dev/sda1' ] && umount /dev/sda1"); //Unmount USB drive -- don't know if this works try it out
-
-    system("echo Initialising standby mode...");
-
-    //system("echo Core Temperature at the time of standby: $(hakchi hwmon)c");
-    system("echo Standby mode active! Awaiting input...");
     for(;;)
     {
         c.Update();
@@ -138,8 +119,6 @@ void Standby()
 
 int main(int argc, char * argv[])
 {
-    path = argv[0];
-    path = path.substr(0, path.find_last_of('/')+1);
 
     for(;;)
     {
@@ -152,6 +131,6 @@ int main(int argc, char * argv[])
             Standby();
             break;
         }
-        system("hakchi uiresume");
+        system("standby Resume");
     }
 }
