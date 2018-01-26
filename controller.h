@@ -1,3 +1,11 @@
+/**
+  * Copyright (C) 2018 CompCom
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+  * as published by the Free Software Foundation; either version 3
+  * of the License, or (at your option) any later version.
+  */
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
@@ -26,6 +34,7 @@ public:
     bool PeekButtonStatus(GameButton button);
     bool GetButtonStatus(GameButton button);
     void Update();
+    void Reset();
 };
 
 #endif

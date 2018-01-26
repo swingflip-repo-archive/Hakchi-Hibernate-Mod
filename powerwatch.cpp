@@ -1,3 +1,12 @@
+/**
+  * Copyright (C) 2018 CompCom
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+  * as published by the Free Software Foundation; either version 3
+  * of the License, or (at your option) any later version.
+  */
+
 #include "powerwatch.h"
 
 #include <dirent.h>
@@ -23,6 +32,8 @@ PowerWatch::PowerWatch()
                     in.close();
                     if(temp == "sunxi-knob")
                         powerFd = open(("/dev/input/"+name).c_str(), O_RDONLY | O_NONBLOCK);
+                    else if(temp == "sunxi-keyboard")
+                        resetFd = open(("/dev/input/"+name).c_str(), O_RDONLY | O_NONBLOCK);
                 }
             }
         }
@@ -34,9 +45,9 @@ PowerWatch::PowerWatch()
         exit(1);
     }
 
-    if(powerFd == -1)
+    if(powerFd == -1 || resetFd == -1)
     {
-        std::cerr << "Cannot access power button.\n";
+        std::cerr << "Cannot access power buttons.\n";
         exit(1);
     }
 }
@@ -45,12 +56,16 @@ PowerWatch::~PowerWatch()
 {
     if(powerFd != -1)
         close(powerFd);
+    if(resetFd != -1)
+        close(resetFd);
 }
 
 bool PowerWatch::buttonPress()
 {
     static char c[16];
     if(read(powerFd, c, 16) > 0)
+        return true;
+    if(read(resetFd, c, 16) > 0)
         return true;
     return false;
 }

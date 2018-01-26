@@ -1,3 +1,12 @@
+/**
+  * Copyright (C) 2018 CompCom
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+  * as published by the Free Software Foundation; either version 3
+  * of the License, or (at your option) any later version.
+  */
+
 #include "controller.h"
 
 #include <unistd.h>
@@ -14,19 +23,8 @@ Controller::Controller()
       std::cerr << "Cannot access controller.\n";
       exit(1);
     }
-       
-    buttons[A] = 0;
-    buttons[B] = 0;
-    buttons[X] = 0;
-    buttons[Y] = 0;
-    buttons[L] = 0;
-    buttons[R] = 0;
-    buttons[SELECT] = 0;
-    buttons[START] = 0;
-    buttons[LEFT] = 0;
-    buttons[RIGHT] = 0;
-    buttons[UP] = 0;
-    buttons[DOWN] = 0;
+
+    Reset();
 }
 Controller::~Controller()
 {
@@ -59,4 +57,19 @@ void Controller::Update()
             }
         }
     }
+}
+void Controller::Reset()
+{
+    buttons[A] = 0;
+    buttons[B] = 0;
+    buttons[X] = 0;
+    buttons[Y] = 0;
+    buttons[L] = 0;
+    buttons[R] = 0;
+    buttons[SELECT] = 0;
+    buttons[START] = 0;
+    buttons[LEFT] = 0;
+    buttons[RIGHT] = 0;
+    buttons[UP] = 0;
+    buttons[DOWN] = 0;
 }
