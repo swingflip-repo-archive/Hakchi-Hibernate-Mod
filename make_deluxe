@@ -1,0 +1,11 @@
+all: out/hibernate_mod_deluxe_v1_0.hmod
+
+out/hibernate_mod_deluxe_v1_0.hmod:
+	mkdir -p out/
+	cd Hibernate_Mod_Deluxe/; tar -czvf "../$@" *
+	touch "$@"
+
+clean:
+	-rm -rf out/
+
+.PHONY: clean

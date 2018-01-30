@@ -12,7 +12,6 @@ Controller c;
 PowerWatch pw;
 const auto fpsTime = std::chrono::milliseconds(200);
 auto nextUpdateTime = std::chrono::system_clock::now()+fpsTime;
-std::string path;
 
 int GetState()
 {
@@ -21,7 +20,9 @@ int GetState()
         c.Update();
         if(c.PeekButtonStatus(L) && c.PeekButtonStatus(R) && c.GetButtonStatus(UP))
         {
+            system("standby ReloadImagePayload");
             system("standby DisplayMenu");
+            system("cat /tmp/power_menu_screen > /dev/fb0");
             auto fpsTime = std::chrono::milliseconds(33); // Check for input faster
             //system("echo DEBUG: Displaying hibernate menu...");
             for(;;)
@@ -46,6 +47,7 @@ int GetState()
                 {
                     return 3;
                 }
+                system("cat /tmp/power_menu_screen > /dev/fb0"); // This will fix the framebuffer getting overwritten by a stack process
                 std::this_thread::sleep_until(nextUpdateTime);
                 nextUpdateTime+=fpsTime;
             }
@@ -119,7 +121,6 @@ void Standby()
 
 int main(int argc, char * argv[])
 {
-
     for(;;)
     {
         switch(GetState())
