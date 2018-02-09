@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 #include <sys/reboot.h>
 #include <linux/reboot.h>
@@ -13,6 +14,40 @@ PowerWatch pw;
 const auto fpsTime = std::chrono::milliseconds(200);
 auto nextUpdateTime = std::chrono::system_clock::now()+fpsTime;
 
+int DisplayMenu()
+{
+    system("standby ReloadImagePayload");
+    system("cat /tmp/power_menu_screen > /dev/fb0");
+    auto fpsTime = std::chrono::milliseconds(33); // Check for input faster
+    //system("echo DEBUG: Displaying hibernate menu...");
+    for(;;)
+    {
+        c.Update();
+        if(c.PeekButtonStatus(A)) //Accept (Hibernate)
+        {
+            //system("echo DEBUG: Accepted hibernate...");
+            return 1;
+        }
+        else if(c.PeekButtonStatus(X)) //Accept (Standby)
+        {
+            //system("echo DEBUG: Accepted standby...");
+            return 2;
+        }
+        else if(c.PeekButtonStatus(Y)) //Cancel
+        {
+            //system("echo DEBUG: Cancelled hibernate...");
+            return 3;
+        }
+        else if(pw.buttonPress())
+        {
+            return 3;
+        }
+        system("cat /tmp/power_menu_screen > /dev/fb0"); // This will fix the framebuffer getting overwritten by a stack process
+        std::this_thread::sleep_until(nextUpdateTime);
+        nextUpdateTime+=fpsTime;
+    }
+}
+
 int GetState()
 {
     for(;;)
@@ -20,37 +55,8 @@ int GetState()
         c.Update();
         if(c.PeekButtonStatus(L) && c.PeekButtonStatus(R) && c.GetButtonStatus(UP))
         {
-            system("standby ReloadImagePayload");
             system("standby DisplayMenu");
-            system("cat /tmp/power_menu_screen > /dev/fb0");
-            auto fpsTime = std::chrono::milliseconds(33); // Check for input faster
-            //system("echo DEBUG: Displaying hibernate menu...");
-            for(;;)
-            {
-                c.Update();
-                if(c.PeekButtonStatus(A)) //Accept (Hibernate)
-                {
-                    //system("echo DEBUG: Accepted hibernate...");
-                    return 1;
-                }
-                else if(c.PeekButtonStatus(X)) //Accept (Standby)
-                {
-                    //system("echo DEBUG: Accepted standby...");
-                    return 2;
-                }
-                else if(c.PeekButtonStatus(Y)) //Cancel
-                {
-                    //system("echo DEBUG: Cancelled hibernate...");
-                    return 3;
-                }
-                else if(pw.buttonPress())
-                {
-                    return 3;
-                }
-                system("cat /tmp/power_menu_screen > /dev/fb0"); // This will fix the framebuffer getting overwritten by a stack process
-                std::this_thread::sleep_until(nextUpdateTime);
-                nextUpdateTime+=fpsTime;
-            }
+            return DisplayMenu();
         }
         else
         {
@@ -121,9 +127,9 @@ void Standby()
 
 int main(int argc, char * argv[])
 {
-    for(;;)
+    if(argc == 2 && strcmp(argv[1], "--displayMenu") == 0)
     {
-        switch(GetState())
+        switch(DisplayMenu())
         {
         case 1:
             Hibernate();
@@ -132,6 +138,22 @@ int main(int argc, char * argv[])
             Standby();
             break;
         }
-        system("standby Resume");
+        system("rm -f /tmp/power_menu_screen");
+    }
+    else
+    {
+        for(;;)
+        {
+            switch(GetState())
+            {
+            case 1:
+                Hibernate();
+                break;
+            case 2:
+                Standby();
+                break;
+            }
+            system("standby Resume");
+        }
     }
 }
