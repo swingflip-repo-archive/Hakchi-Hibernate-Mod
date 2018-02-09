@@ -50,6 +50,7 @@ DisplayMenu()
 
 Resume()
 {
+  rm -f /tmp/power_menu_screen
   if type -t uiresume 1> /dev/null; then
     uiresume
   else
